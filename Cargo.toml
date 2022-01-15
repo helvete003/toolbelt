@@ -1,0 +1,24 @@
+[package]
+name = "toolbelt"
+version = "0.1.0"
+edition = "2021"
+description = "WASM image Converter"
+repository = "https://github.com/helvete003/toolbelt"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+
+[dependencies]
+wasm-bindgen = "0.2"
+console_error_panic_hook = {version= "0.1", optional = true }
+image = {version= "0.23", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }
+
+[profile.release]
+opt-level = 's'
