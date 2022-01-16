@@ -105,7 +105,6 @@
 				  <DropdownItem on:click={() => startConvert("Ico")}>Ico</DropdownItem>
 				  <DropdownItem on:click={() => startConvert("Tga")}>Tga</DropdownItem>
 				  <DropdownItem on:click={() => startConvert("Bmp")}>Bmp</DropdownItem>
-				  <DropdownItem on:click={() => startConvert("Farbfeld")}>Farbfeld</DropdownItem>
 				</DropdownMenu>
 			  </ButtonDropdown>
 		</InputGroup>
