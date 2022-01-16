@@ -1,5 +1,5 @@
-importScripts("pkg/toolbelt.js");
-let wasm_converter = wasm_bindgen("pkg/toolbelt_bg.wasm");
+importScripts("./pkg/toolbelt.js");
+let wasm_converter = wasm_bindgen("./pkg/toolbelt_bg.wasm");
 
 onmessage = function(e) {
     let fileList = e.data.file_elements;
