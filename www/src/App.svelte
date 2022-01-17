@@ -19,7 +19,7 @@
 	let file_elements = null;
 	let selected_file_count = 0;
 	let convert_button = null;
-	let converter_worker = new Worker('./converter_worker.js');
+	const converter_worker = new Worker('./converter_worker.js');
 	let file_input; //the file input field
 
 	let converted_elements = new Array();
@@ -30,10 +30,13 @@
 	let zipping_alert = false;
 	let error_alert = false;
 	let error_text;
+	if(!window.Worker) {
+		console.log("No webworker support in this browser!");
+	}
 	onMount(() => {
 		convert_button = document.getElementById('convert-button');
 		convert_button.disabled = true;
-		
+
 		document.addEventListener("change", function(e) {
 			if(e.target && e.target.id== 'file-input') {
 				//converter_worker.postMessage(e.target.files);
@@ -85,7 +88,9 @@
 		converted_elements = new Array();
 		//console.log(convert_button);
 		convert_button.disabled = true;
+		console.log(file_elements);
 		converter_worker.postMessage({file_elements, into_format});
+
 	}
 </script>
 

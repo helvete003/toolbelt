@@ -1,5 +1,9 @@
-# toolbelt
+# toolbelt - the simple web based image converter
 You can find a running version at [https://helvete003.github.io/toolbelt/](https://helvete003.github.io/toolbelt/)
+
+toolbelt is a simple image converter written in Rust and Javascript using WASM and Svelte.
+The idea is to provide an image converter for every system that has a modern webbrowser.
+
 ## Setup
 First we need to install all the necessary tools
 
