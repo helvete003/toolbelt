@@ -15,7 +15,7 @@
             {file_element.new_name}
         </Col>
         <Col md="4" lg="2">
-            <a class="btn btn-primary" href="{URL.createObjectURL(file_element.image_blob)}" download="{file_element.new_name}" style="width:100%;">Download</a>
+            <a class="btn btn-primary" href="{file_element.image_url}" download="{file_element.new_name}" style="width:100%;">Download</a>
         </Col>
     </Row>
 </ListGroupItem>

@@ -48,8 +48,12 @@
 		}, false);
 		converter_worker.onmessage = function(e) {
 			if(e.data.status == "image_done") {
-				converted_elements = [...converted_elements, e.data]; //Reactive assigment of arrays
-				zip_file.file(e.data.new_name, e.data.image_blob);
+				//let image_blob = new Blob([e.data.converted_image_bytes], { type: e.data.new_type});
+				let image_url = URL.createObjectURL(
+						new Blob([e.data.converted_image_bytes], { type: e.data.new_type})
+						);
+				converted_elements = [...converted_elements, {image_url, new_name: e.data.new_name}]; //Reactive assigment of arrays
+				zip_file.file(e.data.new_name, e.data.converted_image_bytes);
 				//all images have been converted
 			} else if(e.data.status == "image_error") {
 				error_alert = true;
@@ -89,7 +93,9 @@
 		//console.log(convert_button);
 		convert_button.disabled = true;
 		console.log(file_elements);
+		console.time("postmessage");
 		converter_worker.postMessage({file_elements, into_format});
+		console.timeEnd("postmessage");
 
 	}
 </script>
