@@ -92,10 +92,7 @@
 		converted_elements = new Array();
 		//console.log(convert_button);
 		convert_button.disabled = true;
-		console.log(file_elements);
-		console.time("postmessage");
 		converter_worker.postMessage({file_elements, into_format});
-		console.timeEnd("postmessage");
 
 	}
 </script>
