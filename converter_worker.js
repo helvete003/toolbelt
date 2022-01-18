@@ -18,8 +18,10 @@ onmessage = function(e) {
                         x[x.length - 1 ] = e.data.into_format.toLowerCase();
                         return x.join(".");
                     }();
-                    let image_blob = new Blob([converted_image_bytes.buffer], { type: 'image/'+e.data.into_format.toLowerCase() });
-                    postMessage({status: "image_done", image_blob, new_name});
+                    //let image_blob = new Blob([converted_image_bytes.buffer], { type: 'image/'+e.data.into_format.toLowerCase() });
+                    //Using an array buffer to 'move' the result and not clone it
+                    let new_type = 'image/'+e.data.into_format.toLowerCase();
+                    postMessage({status: "image_done", converted_image_bytes, new_type, new_name}, [converted_image_bytes.buffer]);
                 } else {
                     let error_message = "";
                     let status = converted_image_bytes[0];
@@ -34,5 +36,4 @@ onmessage = function(e) {
                 }
             });
     }
-
 };
