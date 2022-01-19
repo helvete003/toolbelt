@@ -14,7 +14,7 @@
             
         </Col>
         <Col md="4" lg="2">
-            <a class="btn btn-primary" href="{zip_file_url}" style="width:100%;" download="converted.zip">Zip</a>
+            <a class="btn btn-primary" href="{zip_file_url.file}" style="width:100%;" download="{zip_file_url.name}">Zip</a>
         </Col>
     </Row>
 </ListGroupItem>
