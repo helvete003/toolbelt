@@ -14,7 +14,6 @@
 	import Promo from './Promo.svelte';
 	import Zip from './ZipDownload.svelte';
 	import { onMount } from 'svelte';
-	import JSZip from 'jszip';
 
 	let file_elements = null;
 	let selected_file_count = 0;
@@ -23,7 +22,7 @@
 	let file_input; //the file input field
 
 	let converted_elements = new Array();
-	let zip_file = null;
+	
 	let zip_url;
 	//Alerts in the system
 	let converting_alert = false;
@@ -39,8 +38,6 @@
 
 		document.addEventListener("change", function(e) {
 			if(e.target && e.target.id== 'file-input') {
-				//converter_worker.postMessage(e.target.files);
-				//console.log(e.target.files);
 				file_elements = e.target.files;
 				selected_file_count = file_elements.length;
 				convert_button.disabled = false;
@@ -48,32 +45,32 @@
 		}, false);
 		converter_worker.onmessage = function(e) {
 			if(e.data.status == "image_done") {
-				//let image_blob = new Blob([e.data.converted_image_bytes], { type: e.data.new_type});
 				let image_url = URL.createObjectURL(
 						new Blob([e.data.converted_image_bytes], { type: e.data.new_type})
 						);
 				converted_elements = [...converted_elements, {image_url, new_name: e.data.new_name}]; //Reactive assigment of arrays
-				zip_file.file(e.data.new_name, e.data.converted_image_bytes);
+				if(converted_elements.length == selected_file_count) {
+					file_input.value = "";
+					convert_button.disabled = true;
+					converting_alert = false;
+					if(converted_elements.length > 0) {
+						converter_worker.postMessage({status: "generate_zip"});
+						zipping_alert = true;
+					}
+				}
 				//all images have been converted
 			} else if(e.data.status == "image_error") {
 				error_alert = true;
 				error_text = e.data.error_message;
 				--selected_file_count; //we remove some images from the counter
-			}
-			if(converted_elements.length == selected_file_count) {
-				file_input.value = "";
-				convert_button.disabled = true;
-				converting_alert = false;
-				if(converted_elements.length > 0) {
-					zipping_alert = true;
-					zip_file.generateAsync({type:"base64"}).then(function (base64) {
-						zip_url = "data:application/zip;base64," + base64;
-						zipping_alert = false;
-					}, function (err) {
-						error_alert = true;
-						error_text = err.message;
-					});
-				}
+			} else if(e.data.status == "finished_zip") {
+				zipping_alert = false;
+				zip_url = {
+					name: "toolbelt.zip" , 
+					file: URL.createObjectURL(
+						new Blob([e.data.zip_bytes], { type: "application/zip"})
+						)
+					};
 			}
 		};
 	});
@@ -86,13 +83,12 @@
 	function startConvert(into_format) {
 		converting_alert = true;
 		zip_url = undefined;
-		zip_file = new JSZip();
 		error_alert = false;
 		error_text = "";
 		converted_elements = new Array();
 		//console.log(convert_button);
 		convert_button.disabled = true;
-		converter_worker.postMessage({file_elements, into_format});
+		converter_worker.postMessage({status: "convert_images", file_elements, into_format});
 
 	}
 </script>

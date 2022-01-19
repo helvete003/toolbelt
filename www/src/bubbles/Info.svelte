@@ -24,7 +24,7 @@
             Which also means that depending on the device you are using, it can take longer to convert the images. 
         </p>
         <p>
-            Version: 0.1 beta
+            Version: 0.2 beta
         </p>
     </Modal>
 </div>
