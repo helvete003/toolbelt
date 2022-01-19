@@ -1,21 +1,12 @@
 use wasm_bindgen::prelude::*;
-use zip::write::FileOptions;
 use image::io::Reader as ImageReader;
 use std::io::Cursor;
-use std::collections::HashMap;
-use std::io::Write;
 mod utils;
 
 #[wasm_bindgen]
 extern {
     #[wasm_bindgen(js_namespace = console)]
     pub fn log(str: &str);
-}
-
-macro_rules! console_log {
-    // Note that this is using the `log` function imported above during
-    // `bare_bones`
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
 
 #[wasm_bindgen]
@@ -68,18 +59,4 @@ pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Vec<u8> {
             return converted_bytes;
         }
     }
-}
-
-#[wasm_bindgen]
-pub fn create_zip(files: JsValue) -> Vec<u8> {
-    let files: HashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(files).expect("Couldn't parse values ");
-    let mut buffer: Vec<u8> = Vec::new();
-
-    let mut zip = zip::ZipWriter::new(Cursor::new(&mut buffer));
-    for (key, file) in files.iter() {
-        zip.start_file(key, FileOptions::default()).expect("Failed at start_file");
-        zip.write_all(file).expect("Failed to write File to zip");
-    }
-    let final_zip = zip.finish().expect("Failed to finish zip");
-    final_zip.into_inner().to_vec()
 }
