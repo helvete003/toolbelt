@@ -72,14 +72,22 @@ pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Vec<u8> {
 
 #[wasm_bindgen]
 pub fn create_zip(files: JsValue) -> Vec<u8> {
+    utils::set_panic_hook();
+    //console_log!("Starting Zipping");
     let files: HashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(files).expect("Couldn't parse values ");
+    //console_log!("Parsed data");
     let mut buffer: Vec<u8> = Vec::new();
 
     let mut zip = zip::ZipWriter::new(Cursor::new(&mut buffer));
+    //console_log!("Created zip");
     for (key, file) in files.iter() {
+        //console_log!("Loop");
         zip.start_file(key, FileOptions::default()).expect("Failed at start_file");
         zip.write_all(file).expect("Failed to write File to zip");
+        //console_log!("Current File {}", key);
     }
+    //console_log!("Finished loop");
     let final_zip = zip.finish().expect("Failed to finish zip");
+    //console_log!("Finished");
     final_zip.into_inner().to_vec()
 }
