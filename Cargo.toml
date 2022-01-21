@@ -1,6 +1,6 @@
 [package]
 name = "toolbelt"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "WASM image Converter"
 repository = "https://github.com/helvete003/toolbelt"
@@ -20,7 +20,6 @@ wasm-bindgen = "0.2"
 console_error_panic_hook = {version= "0.1", optional = true }
 image = {version= "0.23", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }
 zip = { version = "0.5", default-features = false, features = ["deflate"] }
-serde-wasm-bindgen = "0.4"
 
 [profile.release]
 opt-level = 's'

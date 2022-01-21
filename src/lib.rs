@@ -1,9 +1,7 @@
 use wasm_bindgen::prelude::*;
 use zip::write::FileOptions;
 use image::io::Reader as ImageReader;
-use std::io::Cursor;
-use std::collections::HashMap;
-use std::io::Write;
+use std::io::{self, Error, ErrorKind, Write, Read, Cursor};
 mod utils;
 
 #[wasm_bindgen]
@@ -71,23 +69,49 @@ pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Vec<u8> {
 }
 
 #[wasm_bindgen]
-pub fn create_zip(files: JsValue) -> Vec<u8> {
+pub fn create_zip(files: Vec<u8>) -> Vec<u8> {
     utils::set_panic_hook();
     //console_log!("Starting Zipping");
-    let files: HashMap<String, Vec<u8>> = serde_wasm_bindgen::from_value(files).expect("Couldn't parse values ");
     //console_log!("Parsed data");
     let mut buffer: Vec<u8> = Vec::new();
+    let mut file_cursor = Cursor::new(&files);
 
     let mut zip = zip::ZipWriter::new(Cursor::new(&mut buffer));
     //console_log!("Created zip");
-    for (key, file) in files.iter() {
-        //console_log!("Loop");
-        zip.start_file(key, FileOptions::default()).expect("Failed at start_file");
-        zip.write_all(file).expect("Failed to write File to zip");
-        //console_log!("Current File {}", key);
+    for (key, file) in files.iter().enumerate() {
+        if *file == 0xFF {
+            if files[key+1] == 0x54 && files[key+2] == 0x42 && files[key+3] == 0x42 && files[key+4] == 0x4E {
+                read_data(&files[key+5..], &mut zip);
+            }
+        }
     }
-    //console_log!("Finished loop");
+    
     let final_zip = zip.finish().expect("Failed to finish zip");
-    //console_log!("Finished");
     final_zip.into_inner().to_vec()
+}
+
+fn read_data<W: Write + io::Seek>(file: &[u8], zip: &mut zip::ZipWriter<W>) {
+    let mut name_buffer: Vec<u8> = Vec::new();
+    let mut file_buffer: Vec<u8> = Vec::new();
+    for (key_a, n_a) in file.iter().enumerate() {
+        if *n_a == 0xFF {
+            if file[key_a+1] == 0x54 && file[key_a+2] == 0x42 && file[key_a+3] == 0x42 && file[key_a+4] == 0x46 {
+                let file_slice = &file[key_a+5..];
+                for (key_b, n_b) in file_slice.iter().enumerate() {
+                    if *n_b == 0xFF {
+                        if file_slice[key_b+1] == 0x54 && file_slice[key_b+2] == 0x42 && file_slice[key_b+3] == 0x45 && file_slice[key_b+4] == 0x46 {
+                            break;
+                        }
+                    }
+                    file_buffer.push(*n_b);
+                }
+                break;
+            }
+        } else {
+            name_buffer.push(*n_a);
+        }
+    }
+    let name = String::from_utf8(name_buffer).unwrap();
+    zip.start_file(name, FileOptions::default()).expect("Failed at start_file");
+    zip.write_all(&file_buffer).expect("Failed to write File to zip");
 }
