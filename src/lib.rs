@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use zip::write::FileOptions;
 use image::io::Reader as ImageReader;
-use std::io::{self, Error, ErrorKind, Write, Read, Cursor};
+use std::io::{self, Write, Cursor};
 mod utils;
 
 #[wasm_bindgen]
@@ -10,11 +10,11 @@ extern {
     pub fn log(str: &str);
 }
 
-macro_rules! console_log {
+/*macro_rules! console_log {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
+}*/
 
 #[wasm_bindgen]
 pub enum FileFormat {
@@ -74,7 +74,7 @@ pub fn create_zip(files: Vec<u8>) -> Vec<u8> {
     //console_log!("Starting Zipping");
     //console_log!("Parsed data");
     let mut buffer: Vec<u8> = Vec::new();
-    let mut file_cursor = Cursor::new(&files);
+    //let mut file_cursor = Cursor::new(&files);
 
     let mut zip = zip::ZipWriter::new(Cursor::new(&mut buffer));
     //console_log!("Created zip");
@@ -93,14 +93,14 @@ pub fn create_zip(files: Vec<u8>) -> Vec<u8> {
 fn read_data<W: Write + io::Seek>(file: &[u8], zip: &mut zip::ZipWriter<W>) {
     let mut name_buffer: Vec<u8> = Vec::new();
     let mut file_buffer: Vec<u8> = Vec::new();
-    for (key_a, n_a) in file.iter().enumerate() {
+    'outer: for (key_a, n_a) in file.iter().enumerate() {
         if *n_a == 0xFF {
             if file[key_a+1] == 0x54 && file[key_a+2] == 0x42 && file[key_a+3] == 0x42 && file[key_a+4] == 0x46 {
                 let file_slice = &file[key_a+5..];
                 for (key_b, n_b) in file_slice.iter().enumerate() {
                     if *n_b == 0xFF {
                         if file_slice[key_b+1] == 0x54 && file_slice[key_b+2] == 0x42 && file_slice[key_b+3] == 0x45 && file_slice[key_b+4] == 0x46 {
-                            break;
+                            break 'outer;
                         }
                     }
                     file_buffer.push(*n_b);
