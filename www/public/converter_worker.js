@@ -5,12 +5,14 @@ let zip = undefined;
 let zip_buffer = new Uint8Array();
 
 Uint8Array.prototype.appendBytes = function(name, file_bytes) {
-    let encoder = new TextEncoder();
-    let text_bytes = encoder.encode(name);
+    let text_bytes = new TextEncoder();
+    let file_base64_bytes = new TextEncoder();
+    text_bytes = text_bytes.encode(name);
+    file_bytes = file_base64_bytes.encode(file_bytes);
 
     let tmp_data = new Uint8Array(this.length + 20 + text_bytes.length + file_bytes.length);
     //since Uint8Array is a zero'ed slice of memory we need to offet the data ourself
-    let offset = 0; 
+    let offset = 0;
     tmp_data.set(this, offset);
     offset += this.length;
     tmp_data.set([0xFF, 0x54, 0x42, 0x42, 0x4E], offset); // FF T B B N (Toolbelt begin name)
@@ -49,7 +51,7 @@ onmessage = function(e) {
                         let new_type = 'image/'+e.data.into_format.toLowerCase();
                         //create a copy of the byte array for zipping
                         //zip[new_name] = converted_image_bytes.slice(0);
-                        zip_buffer = zip_buffer.appendBytes(new_name, converted_image_bytes.slice(0));
+                        zip_buffer = zip_buffer.appendBytes(new_name, btoa(converted_image_bytes.slice(0)));
                         postMessage({status: "image_done", converted_image_bytes, new_type, new_name}, [converted_image_bytes.buffer]);
                     } else {
                         let error_message = "";

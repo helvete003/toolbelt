@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use zip::write::FileOptions;
 use image::io::Reader as ImageReader;
-use std::io::{self, Write, Cursor};
+use std::io::{self, Write, Cursor, Read};
 mod utils;
 
 #[wasm_bindgen]
@@ -10,11 +10,11 @@ extern {
     pub fn log(str: &str);
 }
 
-/*macro_rules! console_log {
+macro_rules! console_log {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}*/
+}
 
 #[wasm_bindgen]
 pub enum FileFormat {
@@ -112,6 +112,21 @@ fn read_data<W: Write + io::Seek>(file: &[u8], zip: &mut zip::ZipWriter<W>) {
         }
     }
     let name = String::from_utf8(name_buffer).unwrap();
+    let file_base64 = String::from_utf8(file_buffer).unwrap();
+    let bytes = base64_decode(&file_base64);
+
     zip.start_file(name, FileOptions::default()).expect("Failed at start_file");
-    zip.write_all(&file_buffer).expect("Failed to write File to zip");
+    zip.write_all(&bytes).expect("Failed to write File to zip");
+}
+
+fn base64_decode(file_base64: &String) -> Vec<u8> {
+    let data = base64::decode(&file_base64).unwrap();
+    let bytes_str = std::str::from_utf8(&data).unwrap();
+    let iter = bytes_str.split(',');
+    let mut result: Vec<u8> = Vec::new();
+    for n in iter {
+        result.push(n.parse().unwrap());
+    }
+
+    result
 }
