@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use zip::write::FileOptions;
 use image::io::Reader as ImageReader;
-use std::io::{self, Write, Cursor, Read};
+use std::io::{self, Write, Cursor};
 mod utils;
 
 #[wasm_bindgen]
@@ -28,7 +28,7 @@ pub enum FileFormat {
 }
 
 #[wasm_bindgen]
-pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Vec<u8> {
+pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Result<Vec<u8>, JsValue> {
     utils::set_panic_hook();
 
     let mut converted_bytes: Vec<u8> = Vec::new();
@@ -36,15 +36,13 @@ pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Vec<u8> {
     let img = match ImageReader::new(Cursor::new(image_bytes)).with_guessed_format() {
         Ok(i) => i,
         Err(_) => {
-            converted_bytes.push(0);
-            return converted_bytes;
+            return Err(JsValue::from("Couldn't load image."));
         }
     };
     let img = match img.decode() {
         Ok(i) => i,
         Err(_) => {
-            converted_bytes.push(1);
-            return converted_bytes;
+            return Err(JsValue::from("Couldn't decode image."));
         }
     };
     
@@ -59,11 +57,9 @@ pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Vec<u8> {
         FileFormat::Farbfeld => image::ImageOutputFormat::Farbfeld
     };
     match img.write_to(&mut converted_bytes, format) {
-        Ok(_i) => return converted_bytes,
+        Ok(_i) => return Ok(converted_bytes),
         Err(_) => {
-            converted_bytes.clear();
-            converted_bytes.push(2);
-            return converted_bytes;
+            return Err(JsValue::from("Couldn't encode image."));
         }
     }
 }
