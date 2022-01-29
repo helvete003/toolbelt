@@ -37,11 +37,15 @@ onmessage = function(e) {
                 .then((buffer) => {
                     return wasm_converter.then(() => {
                         let into_format = wasm_bindgen.FileFormat[e.data.into_format];
-                        return wasm_bindgen.convert_image(new Uint8Array(buffer), into_format);
+                        try {
+                            return wasm_bindgen.convert_image(new Uint8Array(buffer), into_format);
+                        } catch(error_message) {
+                            postMessage({status: "image_error", error_message, name: fileList[i].name});
+                        }
                     });
                 })
                 .then((converted_image_bytes) => {
-                    if(converted_image_bytes.length > 1) {
+                    if(converted_image_bytes) {
                         let new_name = function() {
                             let x = fileList[i].name.split(".");
                             x[x.length - 1 ] = e.data.into_format.toLowerCase();
@@ -53,17 +57,6 @@ onmessage = function(e) {
                         //zip[new_name] = converted_image_bytes.slice(0);
                         zip_buffer = zip_buffer.appendBytes(new_name, btoa(converted_image_bytes.slice(0)));
                         postMessage({status: "image_done", converted_image_bytes, new_type, new_name}, [converted_image_bytes.buffer]);
-                    } else {
-                        let error_message = "";
-                        let status = converted_image_bytes[0];
-                        if(status == 0) {
-                            error_message = "Couldn't load image."
-                        } else if(status == 1) {
-                            error_message = "Couldn't decode image."
-                        } else {
-                            error_message = "Couldn't encode image."
-                        }
-                        postMessage({status: "image_error", error_message, name: fileList[i].name});
                     }
                 });
         }
