@@ -35,14 +35,18 @@ pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Result<Vec<
 
     let img = match ImageReader::new(Cursor::new(image_bytes)).with_guessed_format() {
         Ok(i) => i,
-        Err(_) => {
-            return Err(JsValue::from("Couldn't load image."));
+        Err(e) => {
+            return Err(JsValue::from(
+                format!("Couldn't load image. {}", e)
+            ));
         }
     };
     let img = match img.decode() {
         Ok(i) => i,
-        Err(_) => {
-            return Err(JsValue::from("Couldn't decode image."));
+        Err(e) => {
+            return Err(JsValue::from(
+                format!("Couldn't decode image. {}", e)
+            ));
         }
     };
     
@@ -58,8 +62,10 @@ pub fn convert_image(image_bytes: Vec<u8>, into_file: FileFormat) -> Result<Vec<
     };
     match img.write_to(&mut converted_bytes, format) {
         Ok(_i) => return Ok(converted_bytes),
-        Err(_) => {
-            return Err(JsValue::from("Couldn't encode image."));
+        Err(e) => {
+            return Err(JsValue::from(
+                format!("Couldn't encode image. {}", e)
+            ));
         }
     }
 }
